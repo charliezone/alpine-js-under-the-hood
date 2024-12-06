@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script> -->
+</head>
+<body
+    class="bg-slate-200 flex items-center h-screen p-5"
+>
+    <div
+        class="bg-slate-300 text-slate-500 flex flex-col grow"
+        x-data="{tab: null}"
+    >
+        <div
+            class="flex justify-between p-4"
+        >
+            <span>Tab 1</span>
+            <button
+                x-show="tab !== 1"
+                x-on:click="tab = 1"
+            >+</button>
+            <button
+                x-show="tab === 1"
+                x-on:click="tab = null"
+            >-</button>
+        </div>
+        <div
+            class="p-4"
+            x-show="tab === 1"
+        >
+            Tab 1 content Lorem, ipsum dolor sit amet consectetur adipisicing elit. Culpa, sunt totam! Ab blanditiis velit, maiores nulla optio possimus iure harum deserunt libero ut, maxime voluptates laudantium voluptatem tempora, architecto accusantium?
+        </div>
+
+        <div
+            class="flex justify-between p-4"
+        >
+            <span>Tab 2</span>
+            <button
+                x-show="tab !== 2"
+                x-on:click="tab = 2"
+            >+</button>
+            <button
+                x-show="tab === 2"
+                x-on:click="tab = null"
+            >-</button>
+        </div>
+        <div
+            class="p-4"
+            x-show="tab === 2"
+        >
+            Tab 2 content Lorem, ipsum dolor sit amet consectetur adipisicing elit. Culpa, sunt totam! Ab blanditiis velit, maiores nulla optio possimus iure harum deserunt libero ut, maxime voluptates laudantium voluptatem tempora, architecto accusantium?
+        </div>
+
+        <div
+            class="flex justify-between p-4"
+        >
+            <span>Tab 3</span>
+            <button
+                x-show="tab !== 3"
+                x-on:click="tab = 3"
+            >+</button>
+            <button
+                x-show="tab === 3"
+                x-on:click="tab = null"
+            >-</button>
+        </div>
+        <div
+            class="p-4"
+            x-show="tab === 3"
+        >
+            Tab 3 content Lorem, ipsum dolor sit amet consectetur adipisicing elit. Culpa, sunt totam! Ab blanditiis velit, maiores nulla optio possimus iure harum deserunt libero ut, maxime voluptates laudantium voluptatem tempora, architecto accusantium?
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const root = document.querySelector('[x-data]');
+
+            if(root) {
+                //TODO: use a more secure function to evaluate expressions
+                const rawData = eval(`(${root.getAttribute('x-data')})`);
+                const data = new Proxy(rawData, {
+                    set(target, property, value) {
+                        target[property] = value;
+
+                        refreshDom();
+                    }
+                });
+                
+                function domWalker(root, callback) {
+                    callback(root);
+
+                    let firstElement = root.firstElementChild;
+
+                    while(firstElement) {
+                        domWalker(firstElement, callback);
+
+                        firstElement = firstElement.nextElementSibling;
+                    }
+                }
+
+                function setUpListeners() {
+                    domWalker(root, el => {
+                        if(el.hasAttribute('x-on:click')) {
+                            el.addEventListener('click', () => eval(`with(data)${el.getAttribute('x-on:click')}`));
+                        }
+                    });
+                }
+
+                function refreshDom() {
+                    domWalker(root, el => {
+                        if(el.hasAttribute('x-show')) {
+                            el.style.display = eval(`with(data)${el.getAttribute('x-show')}`) ? 'inherit' : 'none';
+                        }
+                    });
+                }
+
+                setUpListeners();
+                refreshDom();
+            }
+        });
+    </script>
+</body>
+</html>
